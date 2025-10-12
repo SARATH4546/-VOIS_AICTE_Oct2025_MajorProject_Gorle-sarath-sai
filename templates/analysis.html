@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="display-6 fw-bold mb-4">Detailed Analysis Report</h2>
+        </div>
+    </div>
+    
+    {% if report %}
+    <!-- Executive Summary -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5><i class="fas fa-chart-pie"></i> Executive Summary</h5>
+                </div>
+                <div class="card-body">
+                    {% if report.executive_summary %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Dataset Overview</h6>
+                            <ul>
+                                <li><strong>Total Content:</strong> {{ report.executive_summary.total_content }}</li>
+                                <li><strong>Date Range:</strong> {{ report.executive_summary.date_range }}</li>
+                                <li><strong>Peak Year:</strong> {{ report.executive_summary.peak_year }}</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Key Insights</h6>
+                            <ul>
+                                <li><strong>Dominant Genre:</strong> {{ report.executive_summary.dominant_genre }}</li>
+                                <li><strong>Top Country:</strong> {{ report.executive_summary.top_country }}</li>
+                                <li><strong>Movie Percentage:</strong> {{ "%.1f"|format(report.executive_summary.movie_percentage) }}%</li>
+                            </ul>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Analysis Sections -->
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5><i class="fas fa-clock"></i> Temporal Analysis</h5>
+                </div>
+                <div class="card-body">
+                    {% if report.temporal_analysis %}
+                    <h6>Growth Metrics</h6>
+                    <ul>
+                        <li><strong>Peak Year:</strong> {{ report.temporal_analysis.peak_year.year }} ({{ report.temporal_analysis.peak_year.count }} titles)</li>
+                        <li><strong>Average Growth Rate:</strong> {{ "%.1f"|format(report.temporal_analysis.average_growth_rate * 100) }}%</li>
+                        <li><strong>Total Years Span:</strong> {{ report.temporal_analysis.total_years }}</li>
+                    </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5><i class="fas fa-tags"></i> Genre Analysis</h5>
+                </div>
+                <div class="card-body">
+                    {% if report.genre_analysis %}
+                    <h6>Genre Diversity</h6>
+                    <ul>
+                        <li><strong>Total Genres:</strong> {{ report.genre_analysis.total_unique_genres }}</li>
+                        <li><strong>Diversity Score:</strong> {{ "%.2f"|format(report.genre_analysis.genre_diversity_score) }}%</li>
+                    </ul>
+                    
+                    <h6>Top Genres</h6>
+                    <ol class="small">
+                        {% for genre, count in report.genre_analysis.top_genres_overall.items()[:5] %}
+                        <li>{{ genre }} ({{ count }})</li>
+                        {% endfor %}
+                    </ol>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5><i class="fas fa-globe"></i> Geographic Analysis</h5>
+                </div>
+                <div class="card-body">
+                    {% if report.geographic_analysis %}
+                    <h6>Global Distribution</h6>
+                    <ul>
+                        <li><strong>Countries:</strong> {{ report.geographic_analysis.total_unique_countries }}</li>
+                        <li><strong>International Content:</strong> {{ "%.1f"|format(report.geographic_analysis.international_percentage) }}%</li>
+                    </ul>
+                    
+                    <h6>Top Countries</h6>
+                    <ol class="small">
+                        {% for country, count in report.geographic_analysis.top_countries.items()[:5] %}
+                        <li>{{ country }} ({{ count }})</li>
+                        {% endfor %}
+                    </ol>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-line"></i> Strategy Analysis</h5>
+                </div>
+                <div class="card-body">
+                    {% if report.strategy_analysis %}
+                    <h6>Content Strategy</h6>
+                    <ul>
+                        <li><strong>Movie Focus:</strong> {{ "%.1f"|format(report.strategy_analysis.content_mix.movie_percentage) }}%</li>
+                        <li><strong>TV Show Focus:</strong> {{ "%.1f"|format(report.strategy_analysis.content_mix.tv_show_percentage) }}%</li>
+                    </ul>
+                    
+                    <h6>Duration Strategy</h6>
+                    <ul>
+                        <li><strong>Avg Movie Duration:</strong> {{ "%.0f"|format(report.strategy_analysis.duration_strategy.avg_movie_duration) }} min</li>
+                        <li><strong>Avg TV Seasons:</strong> {{ "%.1f"|format(report.strategy_analysis.duration_strategy.avg_tv_seasons) }}</li>
+                    </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-warning">
+                <h5><i class="fas fa-exclamation-triangle"></i> No Analysis Available</h5>
+                <p>Please upload and analyze a dataset first.</p>
+                <a href="{{ url_for('upload_file') }}" class="btn btn-netflix">
+                    <i class="fas fa-upload"></i> Upload Dataset
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

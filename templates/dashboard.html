@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+
+{% block title %}Netflix Analytics Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h2"><i class="fas fa-chart-bar text-danger"></i> Netflix Analytics Dashboard</h1>
+                    <p class="text-muted">Interactive analysis of your Netflix dataset</p>
+                </div>
+                <div>
+                    <button class="btn btn-netflix" onclick="refreshAllCharts()">
+                        <i class="fas fa-sync-alt"></i> Refresh Charts
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Statistics Row -->
+    {% if summary %}
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <h3>{{ "{:,}".format(summary.total_records) }}</h3>
+                    <p class="text-muted mb-0">Total Content</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <h3>{{ "{:,}".format(summary.movies) }}</h3>
+                    <p class="text-muted mb-0">Movies</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <h3>{{ "{:,}".format(summary.tv_shows) }}</h3>
+                    <p class="text-muted mb-0">TV Shows</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <h3>{{ summary.date_range }}</h3>
+                    <p class="text-muted mb-0">Date Range</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Charts Grid -->
+    <div class="row">
+        <!-- Temporal Chart -->
+        <div class="col-lg-8">
+            <div class="chart-container">
+                <h5><i class="fas fa-chart-line"></i> Content Growth Over Time</h5>
+                <div id="temporal-chart">
+                    <div class="loading">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <span class="mt-2">Loading chart...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Mix Chart -->
+        <div class="col-lg-4">
+            <div class="chart-container">
+                <h5><i class="fas fa-chart-pie"></i> Content Mix</h5>
+                <div id="content-mix-chart">
+                    <div class="loading">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <span class="mt-2">Loading chart...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Genre Chart -->
+        <div class="col-lg-6">
+            <div class="chart-container">
+                <h5><i class="fas fa-theater-masks"></i> Top Genres</h5>
+                <div id="genre-chart">
+                    <div class="loading">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <span class="mt-2">Loading chart...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Geographic Chart -->
+        <div class="col-lg-6">
+            <div class="chart-container">
+                <h5><i class="fas fa-globe-americas"></i> Top Countries</h5>
+                <div id="geographic-chart">
+                    <div class="loading">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <span class="mt-2">Loading chart...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+console.log('🎬 Netflix Dashboard initializing...');
+
+// Enhanced chart loading with error handling
+let chartLoadAttempts = {};
+const maxRetries = 3;
+
+// Wait for Plotly to be available
+function waitForPlotly(callback) {
+    if (typeof Plotly !== 'undefined') {
+        callback();
+    } else {
+        console.log('Waiting for Plotly to load...');
+        setTimeout(() => waitForPlotly(callback), 500);
+    }
+}
+
+// Initialize dashboard when ready
+function initializeDashboard() {
+    console.log('📊 Initializing dashboard charts...');
+    loadAllCharts();
+}
+
+function loadAllCharts() {
+    const charts = [
+        { endpoint: '/api/temporal-chart', elementId: 'temporal-chart', name: 'Content Growth Over Time' },
+        { endpoint: '/api/content-mix-chart', elementId: 'content-mix-chart', name: 'Content Mix' },
+        { endpoint: '/api/genre-chart', elementId: 'genre-chart', name: 'Top Genres' },
+        { endpoint: '/api/geographic-chart', elementId: 'geographic-chart', name: 'Top Countries' }
+    ];
+
+    charts.forEach((chart, index) => {
+        setTimeout(() => {
+            loadChart(chart.endpoint, chart.elementId, chart.name);
+        }, index * 300); // Stagger loading
+    });
+}
+
+async function loadChart(endpoint, elementId, chartName) {
+    console.log(`📊 Loading ${chartName}...`);
+    
+    const element = document.getElementById(elementId);
+    if (!element) {
+        console.error(`Element ${elementId} not found`);
+        return;
+    }
+
+    try {
+        const response = await fetch(endpoint, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-cache'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+
+        if (data.chart) {
+            const chartData = JSON.parse(data.chart);
+            await renderChart(elementId, chartData, chartName);
+            console.log(`✅ ${chartName} loaded successfully`);
+        } else {
+            throw new Error('No chart data received');
+        }
+
+    } catch (error) {
+        console.error(`❌ Error loading ${chartName}:`, error);
+        showErrorState(elementId, chartName, error.message);
+    }
+}
+
+async function renderChart(elementId, chartData, chartName) {
+    try {
+        // Enhanced chart configuration
+        const config = {
+            responsive: true,
+            displayModeBar: true,
+            displaylogo: false,
+            modeBarButtonsToRemove: ['pan2d', 'lasso2d', 'select2d', 'autoScale2d'],
+        };
+
+        // Apply Netflix theme
+        if (chartData.layout) {
+            chartData.layout = {
+                ...chartData.layout,
+                font: { family: 'Segoe UI, Arial, sans-serif', size: 12 },
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                margin: { t: 60, r: 40, b: 80, l: 80 }
+            };
+        }
+
+        await Plotly.newPlot(elementId, chartData.data, chartData.layout, config);
+        
+        // Add resize listener
+        window.addEventListener('resize', debounce(() => {
+            Plotly.Plots.resize(elementId);
+        }, 250));
+
+    } catch (error) {
+        console.error(`❌ Error rendering ${chartName}:`, error);
+        throw error;
+    }
+}
+
+function showErrorState(elementId, chartName, errorMessage) {
+    const element = document.getElementById(elementId);
+    const retryCount = chartLoadAttempts[elementId] || 0;
+    
+    if (element) {
+        element.innerHTML = `
+            <div class="error-message">
+                <h6><i class="fas fa-exclamation-triangle"></i> Failed to load ${chartName}</h6>
+                <p class="mb-2">Error: ${errorMessage}</p>
+                ${retryCount < maxRetries ? `
+                    <button class="btn btn-sm btn-outline-danger retry-btn" 
+                            onclick="retryChart('${elementId}', '${chartName}')">
+                        <i class="fas fa-redo"></i> Retry (${retryCount + 1}/${maxRetries})
+                    </button>
+                ` : `
+                    <p class="text-muted small mb-0">
+                        Maximum retry attempts reached. Please refresh the page.
+                    </p>
+                `}
+            </div>
+        `;
+    }
+}
+
+function retryChart(elementId, chartName) {
+    chartLoadAttempts[elementId] = (chartLoadAttempts[elementId] || 0) + 1;
+    
+    const endpoints = {
+        'temporal-chart': '/api/temporal-chart',
+        'content-mix-chart': '/api/content-mix-chart', 
+        'genre-chart': '/api/genre-chart',
+        'geographic-chart': '/api/geographic-chart'
+    };
+    
+    const endpoint = endpoints[elementId];
+    if (endpoint) {
+        console.log(`🔄 Retrying ${chartName}...`);
+        document.getElementById(elementId).innerHTML = `
+            <div class="loading">
+                <div class="spinner-border text-primary" role="status"></div>
+                <span class="mt-2">Retrying...</span>
+            </div>
+        `;
+        loadChart(endpoint, elementId, chartName);
+    }
+}
+
+function refreshAllCharts() {
+    console.log('🔄 Refreshing all charts...');
+    chartLoadAttempts = {};
+    
+    ['temporal-chart', 'content-mix-chart', 'genre-chart', 'geographic-chart'].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.innerHTML = `
+                <div class="loading">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <span class="mt-2">Loading chart...</span>
+                </div>
+            `;
+        }
+    });
+    
+    setTimeout(loadAllCharts, 500);
+}
+
+// Utility function for debouncing
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Start loading when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        waitForPlotly(initializeDashboard);
+    });
+} else {
+    waitForPlotly(initializeDashboard);
+}
+
+// Make functions available globally
+window.refreshAllCharts = refreshAllCharts;
+window.retryChart = retryChart;
+</script>
+{% endblock %}

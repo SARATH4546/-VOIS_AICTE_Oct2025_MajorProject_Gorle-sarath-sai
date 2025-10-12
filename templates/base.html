@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Netflix Analysis Dashboard{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- FIXED: Updated Plotly.js CDN -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    
+    <style>
+        :root {
+            --netflix-red: #E50914;
+            --netflix-dark: #221F1F;
+            --netflix-gray: #564D4D;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, var(--netflix-dark) 0%, #000 100%) !important;
+        }
+        
+        .navbar-brand {
+            color: var(--netflix-red) !important;
+            font-weight: bold;
+            font-size: 1.75rem;
+        }
+        
+        .btn-netflix {
+            background: var(--netflix-red);
+            border: none;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .btn-netflix:hover {
+            background: #b8070f;
+            color: white;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            min-height: 450px;
+        }
+        
+        .chart-container h5 {
+            color: var(--netflix-dark);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--netflix-red);
+        }
+        
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+            color: var(--netflix-gray);
+            flex-direction: column;
+        }
+        
+        .spinner-border.text-primary {
+            color: var(--netflix-red) !important;
+            width: 3rem;
+            height: 3rem;
+        }
+        
+        .stat-card {
+            border-left: 4px solid var(--netflix-red);
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card h3 {
+            color: var(--netflix-red);
+            font-weight: 700;
+            font-size: 2.5rem;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        
+        .retry-btn {
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="fas fa-film"></i> Netflix Analysis
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('index') }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('upload_file') }}">Upload</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mt-3">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="fas fa-film text-danger"></i> Netflix Analysis Platform</h5>
+                    <p>Professional dataset analysis and visualization platform</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <p>&copy; 2025 Netflix Analysis Dashboard</p>
+                    <small>Built with Flask, Plotly, and Bootstrap</small>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Check if Plotly loaded -->
+    <script>
+        if (typeof Plotly === 'undefined') {
+            console.error('Plotly failed to load from CDN, loading alternative...');
+            const plotlyScript = document.createElement('script');
+            plotlyScript.src = 'https://unpkg.com/plotly.js-dist-min@2.27.0/plotly.min.js';
+            document.head.appendChild(plotlyScript);
+        } else {
+            console.log('✅ Plotly loaded successfully');
+        }
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

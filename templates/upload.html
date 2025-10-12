@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-dark text-white">
+                    <h4 class="mb-0"><i class="fas fa-upload"></i> Upload Netflix Dataset</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="mb-4">
+                            <label for="file" class="form-label">Select CSV File</label>
+                            <input type="file" class="form-control" name="file" id="file" accept=".csv" required>
+                            <div class="form-text">
+                                Upload your Netflix dataset in CSV format. Maximum file size: 16MB.
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle"></i> Dataset Requirements:</h6>
+                            <ul class="mb-0">
+                                <li>CSV format with proper headers</li>
+                                <li>Required columns: Show_Id, Category, Title, Country, Release_Date, Type</li>
+                                <li>UTF-8 encoding recommended</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-netflix btn-lg">
+                                <i class="fas fa-upload"></i> Upload and Analyze
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

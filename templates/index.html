@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-4">
+                    Netflix Dataset Analysis
+                </h1>
+                <p class="lead mb-4">
+                    Professional data analytics platform for Netflix content insights and trends.
+                </p>
+                <div class="d-flex gap-3">
+                    {% if has_data %}
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-light btn-lg">
+                            <i class="fas fa-chart-bar"></i> View Dashboard
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('upload_file') }}" class="btn btn-light btn-lg">
+                            <i class="fas fa-upload"></i> Upload Dataset
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Status Section -->
+{% if has_data and data_info %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <h2 class="text-center">Current Dataset Overview</h2>
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-md-3">
+            <div class="card stat-card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-film fa-3x text-primary mb-3"></i>
+                    <h3>{{ data_info.total_records }}</h3>
+                    <p class="text-muted">Total Records</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-video fa-3x text-danger mb-3"></i>
+                    <h3>{{ data_info.movies }}</h3>
+                    <p class="text-muted">Movies</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-tv fa-3x text-success mb-3"></i>
+                    <h3>{{ data_info.tv_shows }}</h3>
+                    <p class="text-muted">TV Shows</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-calendar fa-3x text-warning mb-3"></i>
+                    <h6>{{ data_info.date_range }}</h6>
+                    <p class="text-muted">Date Range</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Features Section -->
+<div class="container my-5">
+    <div class="row text-center mb-5">
+        <div class="col-12">
+            <h2 class="display-5 fw-bold">Analytics Features</h2>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-line fa-3x text-primary mb-3"></i>
+                    <h5>Temporal Analysis</h5>
+                    <p>Content growth trends and timeline insights</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-globe fa-3x text-success mb-3"></i>
+                    <h5>Geographic Distribution</h5>
+                    <p>Global content analysis by country</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-tags fa-3x text-warning mb-3"></i>
+                    <h5>Genre Analysis</h5>
+                    <p>Content categorization and popularity trends</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
