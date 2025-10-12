@@ -40,7 +40,7 @@ A professional-grade data analytics platform for Netflix content analysis with i
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/netflix-analysis-platform.git
+   git clone https://github.com/SARATH4546/netflix-analysis-platform.git
    cd netflix-analysis-platform
    ```
 
